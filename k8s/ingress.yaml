@@ -1,0 +1,8 @@
+apiVersion: x.getambassador.io/v3alpha1
+kind: AmbassadorMapping
+metadata:
+  name: processor
+spec:
+  hostname: "*"
+  prefix: /api/v1
+  service: kustomize-processor:8080
