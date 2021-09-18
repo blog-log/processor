@@ -4,5 +4,6 @@ metadata:
   name: processor
 spec:
   hostname: "*"
-  prefix: /
+  prefix: /api/v1/processor/
+  timeout_ms: 10000
   service: kustomize-processor:8080
