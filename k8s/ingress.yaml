@@ -5,5 +5,4 @@ metadata:
 spec:
   hostname: "*"
   prefix: /
-  method: "*"
   service: kustomize-processor:8080
