@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - image: cheapacr.azurecr.io/processor:3fca3289de203a04f921991e39724af5bb41eaca
-          name: extractor
+          name: processor
           ports:
             - containerPort: 8080
