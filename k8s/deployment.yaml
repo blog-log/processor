@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: processor
+  template:
+    metadata:
+      labels:
+        app: processor
+    spec:
+      containers:
+        - image: cheapacr.azurecr.io/processor:3fca3289de203a04f921991e39724af5bb41eaca
+          name: extractor
+          ports:
+            - containerPort: 8080
