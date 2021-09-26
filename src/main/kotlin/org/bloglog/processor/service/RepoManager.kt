@@ -2,12 +2,15 @@ package org.bloglog.processor.service
 
 import com.google.gson.Gson
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.bloglog.processor.client.ignoreAllSSLErrors
 import org.bloglog.processor.model.Document
 import org.bloglog.processor.model.Repo
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.validation.constraints.NotBlank
@@ -46,18 +49,20 @@ data class RepoDeleteResponseData (
 )
 
 @Service
-class RepoManagerService : RepoManager {
-    private val client = OkHttpClient()
+class RepoManagerService(
+    @Value("\${DATASTORE_URL}")
+    private val serviceUrl: String
+) : RepoManager {
+    private val client = OkHttpClient.Builder().ignoreAllSSLErrors().build()
 
     private val json = "application/json; charset=utf-8".toMediaType()
 
     private val gson = Gson()
 
     override fun set(request: RepoSetRequest): RepoSetResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("us-central1-bloglog-dev.cloudfunctions.net")
-            .addPathSegment("bloglog-database-dev-repoSet")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("repo")
             .build()
 
         val reqBody = gson.toJson(request, RepoSetRequest::class.java).toRequestBody(json)
@@ -75,17 +80,15 @@ class RepoManagerService : RepoManager {
     }
 
     override fun delete(request: RepoDeleteRequest): RepoDeleteResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("us-central1-bloglog-dev.cloudfunctions.net")
-            .addPathSegment("bloglog-database-dev-repoRemove")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("repo")
+            .addPathSegment(request.id)
             .build()
-
-        val reqBody = gson.toJson(request, RepoDeleteRequest::class.java).toRequestBody(json)
 
         val request: Request = Request.Builder()
             .url(url)
-            .post(reqBody)
+            .delete()
             .build()
 
         val respBody = client.newCall(request).execute().body

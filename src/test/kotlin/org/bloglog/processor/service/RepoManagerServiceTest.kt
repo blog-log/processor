@@ -10,7 +10,7 @@ internal class RepoManagerServiceTest {
 
     @BeforeEach
     fun setUp() {
-        service = RepoManagerService()
+        service = RepoManagerService("https://development.bloglog.io/api/v1/datastore")
     }
 
     @Test

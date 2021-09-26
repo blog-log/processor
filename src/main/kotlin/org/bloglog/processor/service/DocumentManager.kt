@@ -1,14 +1,16 @@
 package org.bloglog.processor.service
 
 import com.google.gson.Gson
-import okhttp3.*
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.bloglog.processor.adapter.RepoAdapter
-import org.bloglog.processor.handler.Adder
+import org.bloglog.processor.client.ignoreAllSSLErrors
 import org.bloglog.processor.model.Document
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 interface DocumentManager {
@@ -59,20 +61,21 @@ data class DocumentSearchResponse(
 )
 
 @Service
-class DocumentManagerService : DocumentManager {
-    private val client = OkHttpClient()
+class DocumentManagerService(
+    @Value("\${DATASTORE_URL}")
+    private val serviceUrl: String
+) : DocumentManager {
+
+    private val client = OkHttpClient.Builder().ignoreAllSSLErrors().build()
 
     private val json = "application/json; charset=utf-8".toMediaType()
 
     private val gson = Gson()
 
-
-
     override fun set(request: DocumentSetRequest): DocumentSetResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("us-central1-bloglog-dev.cloudfunctions.net")
-            .addPathSegment("bloglog-database-dev-documentSet")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("document")
             .build()
 
         val reqBody = gson.toJson(request, DocumentSetRequest::class.java).toRequestBody(json)
@@ -90,17 +93,15 @@ class DocumentManagerService : DocumentManager {
     }
 
     override fun delete(request: DocumentDeleteRequest): DocumentDeleteResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("us-central1-bloglog-dev.cloudfunctions.net")
-            .addPathSegment("bloglog-database-dev-documentRemove")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("document")
+            .addPathSegment(request.id)
             .build()
-
-        val reqBody = gson.toJson(request, DocumentDeleteRequest::class.java).toRequestBody(json)
 
         val request: Request = Request.Builder()
             .url(url)
-            .post(reqBody)
+            .delete()
             .build()
 
         val respBody = client.newCall(request).execute().body
@@ -111,10 +112,10 @@ class DocumentManagerService : DocumentManager {
     }
 
     override fun search(request: DocumentSearchRequest): DocumentSearchResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("us-central1-bloglog-dev.cloudfunctions.net")
-            .addPathSegment("bloglog-database-dev-documentSearch")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("document")
+            .addPathSegment("search")
             .build()
 
         val reqBody = gson.toJson(request, DocumentSearchRequest::class.java).toRequestBody(json)
