@@ -2,10 +2,13 @@ package org.bloglog.processor.service
 
 import com.google.gson.Gson
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.bloglog.processor.client.ignoreAllSSLErrors
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 interface SearchManager {
@@ -38,18 +41,20 @@ data class SearchDeleteResponse(
 )
 
 @Service
-class SearchManagerService : SearchManager {
-    private val client = OkHttpClient()
+class SearchManagerService(
+    @Value("\${SEARCHER_URL}")
+    private val serviceUrl: String
+) : SearchManager {
+    private val client = OkHttpClient.Builder().ignoreAllSSLErrors().build()
 
     private val json = "application/json; charset=utf-8".toMediaType()
 
     private val gson = Gson()
 
     override fun set(request: SearchSetRequest): SearchSetResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("fawvvvxzol.execute-api.us-east-1.amazonaws.com")
-            .addPathSegment("add")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("document")
             .build()
 
         val reqBody = gson.toJson(request, SearchSetRequest::class.java).toRequestBody(json)
@@ -67,17 +72,15 @@ class SearchManagerService : SearchManager {
     }
 
     override fun delete(request: SearchDeleteRequest): SearchDeleteResponse {
-        val url = HttpUrl.Builder()
-            .scheme("https")
-            .host("fawvvvxzol.execute-api.us-east-1.amazonaws.com")
-            .addPathSegment("remove")
+        val url = serviceUrl.toHttpUrl()
+            .newBuilder()
+            .addPathSegment("document")
+            .addPathSegment(request.id)
             .build()
-
-        val reqBody = gson.toJson(request, SearchDeleteRequest::class.java).toRequestBody(json)
 
         val request: Request = Request.Builder()
             .url(url)
-            .post(reqBody)
+            .delete()
             .build()
 
         val respBody = client.newCall(request).execute().body

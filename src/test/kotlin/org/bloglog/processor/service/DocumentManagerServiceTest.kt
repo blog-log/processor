@@ -6,11 +6,12 @@ import org.junit.jupiter.api.Test
 
 
 internal class DocumentManagerServiceTest {
-    private lateinit var service : DocumentManagerService
+    private val datastoreUrl: String = "https://development.bloglog.io/api/v1/datastore"
+    private lateinit var service: DocumentManagerService
 
     @BeforeEach
     fun setUp() {
-        service = DocumentManagerService()
+        service = DocumentManagerService(datastoreUrl)
     }
 
     @Test

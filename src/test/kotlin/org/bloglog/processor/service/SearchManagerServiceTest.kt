@@ -10,7 +10,7 @@ internal class SearchManagerServiceTest {
 
     @BeforeEach
     fun setUp() {
-        service = SearchManagerService()
+        service = SearchManagerService("https://development.bloglog.io/api/v1/searcher")
     }
 
     @Test
