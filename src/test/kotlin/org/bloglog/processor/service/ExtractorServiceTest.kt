@@ -9,7 +9,7 @@ internal class ExtractorServiceTest {
     @Test
     fun get() {
         val service = ExtractorService("https://development.bloglog.io/api/v1/extractor")
-        val resp = service.extract(ExtractRequest("https://github.com/brandoncate-personal/blog-user"))
+        val resp = service.extract(ExtractRequest("https://github.com/brandoncate-personal/blog-content"))
 
         assertEquals(null, resp.error)
     }
